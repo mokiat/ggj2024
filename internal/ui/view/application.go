@@ -10,18 +10,21 @@ import (
 var Application = mvc.EventListener(co.Define(&applicationComponent{}))
 
 type ApplicationData struct {
-	AppModel *model.Application
+	AppModel     *model.Application
+	LoadingModel *model.Loading
 }
 
 type applicationComponent struct {
 	co.BaseComponent
 
-	appModel *model.Application
+	appModel     *model.Application
+	loadingModel *model.Loading
 }
 
 func (c *applicationComponent) OnUpsert() {
 	appData := co.GetData[ApplicationData](c.Properties())
 	c.appModel = appData.AppModel
+	c.loadingModel = appData.LoadingModel
 }
 
 func (c *applicationComponent) Render() co.Instance {
@@ -33,6 +36,13 @@ func (c *applicationComponent) Render() co.Instance {
 		co.WithChild(model.ViewNameIntro, co.New(IntroScreen, func() {
 			co.WithData(IntroScreenData{
 				AppModel: c.appModel,
+			})
+		}))
+
+		co.WithChild(model.ViewNameLoading, co.New(LoadingScreen, func() {
+			co.WithData(LoadingScreenData{
+				AppModel:     c.appModel,
+				LoadingModel: c.loadingModel,
 			})
 		}))
 	})

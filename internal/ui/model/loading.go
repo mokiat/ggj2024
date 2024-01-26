@@ -1,0 +1,35 @@
+package model
+
+import (
+	"github.com/mokiat/lacking/ui/mvc"
+)
+
+func NewLoading(eventBus *mvc.EventBus) *Loading {
+	return &Loading{
+		eventBus:     eventBus,
+		promise:      nil,
+		nextViewName: ViewNameIntro,
+	}
+}
+
+type Loading struct {
+	eventBus     *mvc.EventBus
+	promise      LoadingPromise
+	nextViewName ViewName
+}
+
+func (l *Loading) Promise() LoadingPromise {
+	return l.promise
+}
+
+func (l *Loading) SetPromise(promise LoadingPromise) {
+	l.promise = promise
+}
+
+func (l *Loading) NextViewName() ViewName {
+	return l.nextViewName
+}
+
+func (l *Loading) SetNextViewName(name ViewName) {
+	l.nextViewName = name
+}

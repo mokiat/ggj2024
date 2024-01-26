@@ -27,7 +27,7 @@ func (c *introScreenComponent) OnCreate() {
 	introData := co.GetData[IntroScreenData](c.Properties())
 	appModel := introData.AppModel
 	co.After(c.Scope(), time.Second, func() {
-		appModel.SetActiveView(model.ViewNameHome)
+		appModel.SetActiveView(model.ViewNameLoading)
 	})
 }
 

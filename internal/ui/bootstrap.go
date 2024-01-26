@@ -29,18 +29,21 @@ var Bootstrap = co.Define(&bootstrapComponent{})
 type bootstrapComponent struct {
 	co.BaseComponent
 
-	appModel *model.Application
+	appModel     *model.Application
+	loadingModel *model.Loading
 }
 
 func (c *bootstrapComponent) OnCreate() {
 	eventBus := co.TypedValue[*mvc.EventBus](c.Scope())
 	c.appModel = model.NewApplication(eventBus)
+	c.loadingModel = model.NewLoading(eventBus)
 }
 
 func (c *bootstrapComponent) Render() co.Instance {
 	return co.New(view.Application, func() {
 		co.WithData(view.ApplicationData{
-			AppModel: c.appModel,
+			AppModel:     c.appModel,
+			LoadingModel: c.loadingModel,
 		})
 	})
 }
