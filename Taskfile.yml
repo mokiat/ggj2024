@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+  pack:
+    cmds:
+      - go run './cmd/gamepack'
+
+  webpack:
+    cmds:
+      - mkdir -p 'assets/web'
+      - cp 'resources/ui/images/icon.png' 'assets/web/favicon.png'
+      - cp 'resources/web/main.css' 'assets/web/main.css'
+      - cp 'resources/web/main.js' 'assets/web/main.js'
+      - cp 'resources/web/index.html' 'assets/index.html'
+      - cp 'resources/web/wasm_exec.js' 'assets/web'
+
+  assets:
+    deps: [pack, webpack]
+
+  run:
+    cmds:
+      - go run './cmd/gamejam'
+
+  wasm:
+    env:
+      GOOS: js
+      GOARCH: wasm
+    cmds:
+      - go build -o './assets/web/main.wasm' './cmd/gamejam'
+
+  web:
+    cmds:
+      - go run 'github.com/mokiat/httpserv@v1.0.0' -dir './assets' -host '127.0.0.1'

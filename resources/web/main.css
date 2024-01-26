@@ -1,0 +1,77 @@
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  background-color: #222222;
+  color: white;
+}
+
+article {
+  width: 100%;
+  height: 100%;  
+}
+
+#loading {
+  padding-top: 200px;
+  font-style: italic;
+  text-align: center;
+}
+
+#finished {
+  padding-top: 200px;
+  font-style: italic;
+  text-align: center;
+  display: none;
+}
+
+canvas {
+  margin-left: auto;
+  margin-right: auto;
+  display: none;
+}
+
+.loader-holder {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  display: inline-block;
+}
+
+@keyframes loader {
+  0%, 100% {
+    transform: none;
+  }
+  
+  25% {
+    transform: translateX(100%);
+  }
+  
+  50% {
+    transform: translateX(100%) translateY(100%);
+  }
+  
+  75% {
+    transform: translateY(100%);
+  }
+}
+
+.loader {
+  display: block;
+  position: relative;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background-color: white;
+  box-sizing: border-box;
+  position: absolute;
+  animation: loader 2.4s cubic-bezier(0, 0, 0.24, 1.21) infinite;
+}
+
+
