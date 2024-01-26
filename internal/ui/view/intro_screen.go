@@ -3,6 +3,8 @@ package view
 import (
 	"time"
 
+	"github.com/mokiat/ggj2024/internal/game/data"
+	"github.com/mokiat/ggj2024/internal/ui/global"
 	"github.com/mokiat/ggj2024/internal/ui/model"
 	"github.com/mokiat/gog/opt"
 	"github.com/mokiat/lacking/ui"
@@ -12,7 +14,9 @@ import (
 )
 
 type IntroScreenData struct {
-	AppModel *model.Application
+	AppModel     *model.Application
+	LoadingModel *model.Loading
+	PlayModel    *model.Play
 }
 
 var IntroScreen = co.Define(&introScreenComponent{})
@@ -24,10 +28,26 @@ type introScreenComponent struct {
 func (c *introScreenComponent) OnCreate() {
 	co.Window(c.Scope()).SetCursorVisible(false)
 
+	context := co.TypedValue[global.Context](c.Scope())
+	audioAPI := context.AudioAPI
+	engine := context.Engine
+	resourceSet := context.ResourceSet
+
 	introData := co.GetData[IntroScreenData](c.Properties())
 	appModel := introData.AppModel
+	loadingModel := introData.LoadingModel
+	playModel := introData.PlayModel
+	playModel.SetDataPromise(data.LoadPlayData(audioAPI, engine, resourceSet))
+
 	co.After(c.Scope(), time.Second, func() {
-		appModel.SetActiveView(model.ViewNameLoading)
+		promise := playModel.DataPromise()
+		if promise.Ready() {
+			appModel.SetActiveView(model.ViewNamePlay)
+		} else {
+			loadingModel.SetPromise(model.ToLoadingPromise(promise))
+			loadingModel.SetNextViewName(model.ViewNamePlay)
+			appModel.SetActiveView(model.ViewNameLoading)
+		}
 	})
 }
 

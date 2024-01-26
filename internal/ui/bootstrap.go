@@ -31,12 +31,14 @@ type bootstrapComponent struct {
 
 	appModel     *model.Application
 	loadingModel *model.Loading
+	playModel    *model.Play
 }
 
 func (c *bootstrapComponent) OnCreate() {
 	eventBus := co.TypedValue[*mvc.EventBus](c.Scope())
 	c.appModel = model.NewApplication(eventBus)
 	c.loadingModel = model.NewLoading(eventBus)
+	c.playModel = model.NewPlay(eventBus)
 }
 
 func (c *bootstrapComponent) Render() co.Instance {
@@ -44,6 +46,7 @@ func (c *bootstrapComponent) Render() co.Instance {
 		co.WithData(view.ApplicationData{
 			AppModel:     c.appModel,
 			LoadingModel: c.loadingModel,
+			PlayModel:    c.playModel,
 		})
 	})
 }

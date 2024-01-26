@@ -20,13 +20,13 @@ func runTool() error {
 		return fmt.Errorf("failed to create registry: %w", err)
 	}
 
-	skybox := ensureResource(registry, "bab99e80-ded1-459a-b00b-6a17afa44046", "cube_texture", "Skybox")
-	skyboxReflection := ensureResource(registry, "eb639f55-d6eb-46d7-bd3b-d52fcaa0bc58", "cube_texture", "Skybox Reflection")
-	skyboxRefraction := ensureResource(registry, "0815fb89-7ae6-4229-b9e2-59610c4fc6bc", "cube_texture", "Skybox Refraction")
+	skybox := ensureResource(registry, "414eb145-3c3b-4d90-ad53-7aede66bc9c1", "cube_texture", "Skybox")
+	skyboxReflection := ensureResource(registry, "ba7fb3b4-20c3-44f6-89c0-e6e34607209f", "cube_texture", "Skybox Reflection")
+	skyboxRefraction := ensureResource(registry, "c233eac3-96fb-4b40-88c0-5e7f6bf564e1", "cube_texture", "Skybox Refraction")
 
-	modelWorld := ensureResource(registry, "5f7bd967-dc4a-4252-b1a5-5721cd299d67", "model", "World")
+	modelWorld := ensureResource(registry, "90345c66-2194-4a2e-acea-04b21c2df048", "model", "World")
 
-	levelWorld := ensureResource(registry, "884e6395-2300-47bb-9916-b80e3dc0e086", "scene", "World")
+	levelWorld := ensureResource(registry, "21a3cecd-6d04-4fcf-9c9d-e210b97dad3f", "scene", "World")
 	levelWorld.AddDependency(skybox)
 	levelWorld.AddDependency(skyboxReflection)
 	levelWorld.AddDependency(skyboxRefraction)

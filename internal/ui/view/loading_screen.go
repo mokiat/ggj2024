@@ -22,14 +22,14 @@ type loadingScreenComponent struct {
 }
 
 func (c *loadingScreenComponent) OnCreate() {
-	// screenData := co.GetData[LoadingScreenData](c.Properties())
-	// appModel := screenData.AppModel
-	// loadingModel := screenData.LoadingModel
-	// loadingModel.Promise().OnReady(func() {
-	// 	co.Schedule(c.Scope(), func() {
-	// 		appModel.SetActiveView(loadingModel.NextViewName())
-	// 	})
-	// })
+	screenData := co.GetData[LoadingScreenData](c.Properties())
+	appModel := screenData.AppModel
+	loadingModel := screenData.LoadingModel
+	loadingModel.Promise().OnReady(func() {
+		co.Schedule(c.Scope(), func() {
+			appModel.SetActiveView(loadingModel.NextViewName())
+		})
+	})
 }
 
 func (c *loadingScreenComponent) Render() co.Instance {

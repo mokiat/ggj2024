@@ -9,14 +9,14 @@ import (
 )
 
 func LoadPlayData(audioAPI audio.API, engine *game.Engine, resourceSet *game.ResourceSet) async.Promise[*PlayData] {
-	// scenePromise := resourceSet.OpenSceneByName("World")
+	scenePromise := resourceSet.OpenSceneByName("World")
 	// soundPromise := loadSound(audioAPI, engine, "sound/soundtrack.mp3")
 
 	result := async.NewPromise[*PlayData]()
 	go func() {
 		var data PlayData
 		err := errors.Join(
-		// scenePromise.Inject(&data.Scene),
+			scenePromise.Inject(&data.Scene),
 		// soundPromise.Inject(&data.Boom),
 		)
 		if err != nil {
@@ -31,8 +31,6 @@ func LoadPlayData(audioAPI audio.API, engine *game.Engine, resourceSet *game.Res
 type PlayData struct {
 	Scene      *game.SceneDefinition
 	Soundtrack audio.Media
-	Shoot      audio.Media
-	Boom       audio.Media
 }
 
 // func loadSound(audioAPI audio.API, engine *game.Engine, name string) async.Promise[audio.Media] {

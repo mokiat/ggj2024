@@ -5,10 +5,6 @@ import "github.com/mokiat/lacking/ui/mvc"
 const (
 	ViewNameIntro   ViewName = "intro"
 	ViewNameLoading ViewName = "loading"
-	ViewNameHome    ViewName = "home"
-	ViewNameStory   ViewName = "story"
-	ViewNameVictory ViewName = "victory"
-	ViewNameDefeat  ViewName = "defeat"
 	ViewNamePlay    ViewName = "play"
 )
 

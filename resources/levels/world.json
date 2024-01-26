@@ -1,0 +1,14 @@
+{
+  "skybox_texture": "414eb145-3c3b-4d90-ad53-7aede66bc9c1",
+  "ambient_reflection_texture": "ba7fb3b4-20c3-44f6-89c0-e6e34607209f",
+  "ambient_refraction_texture": "c233eac3-96fb-4b40-88c0-5e7f6bf564e1",
+  "collision_meshes": [],
+  "static_entities": [
+    {
+      "name": "Content",
+      "model": "90345c66-2194-4a2e-acea-04b21c2df048",
+      "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    }
+  ],
+  "static_meshes": []
+}
