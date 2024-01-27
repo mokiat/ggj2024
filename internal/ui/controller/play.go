@@ -164,9 +164,9 @@ func (c *PlayController) Start() {
 	c.engine.ResetDeltaTime()
 	c.engine.SetActiveScene(c.scene)
 
-	// c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
-	// 	Loop: true,
-	// })
+	c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
+		Loop: true,
+	})
 
 	c.physicsScene.SubscribeSingleBodyCollision(func(body physics.Body, prop physics.Prop, active bool) {
 		log.Info("Collision between %q and %q: %t", body.Name(), prop.Name(), active)
@@ -175,7 +175,7 @@ func (c *PlayController) Start() {
 }
 
 func (c *PlayController) Stop() {
-	// c.soundtrackPlayback.Stop()
+	c.soundtrackPlayback.Stop()
 	c.engine.SetActiveScene(nil)
 	c.preUpdateSubscription.Delete()
 	c.postUpdateSubscription.Delete()
