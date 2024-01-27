@@ -43,7 +43,7 @@ func NewBall(physicsScene *physics.Scene, airplane *Airplane, model *game.Model)
 			),
 		},
 		CollisionSpheres: []collision.Sphere{
-			collision.NewSphere(dprec.ZeroVec3(), 1.0),
+			collision.NewSphere(dprec.ZeroVec3(), 2.75),
 		},
 	})
 
@@ -90,7 +90,7 @@ func NewBall(physicsScene *physics.Scene, airplane *Airplane, model *game.Model)
 	physicsScene.CreateDoubleBodyConstraint(airplane.Body, ballBody, constraint.NewPairCombined(
 		constraint.NewClampDirectionOffset().
 			SetDirection(dprec.BasisYVec3()).
-			SetMax(-ballRelativePosition.Length()+2.0).
+			SetMax(-ballRelativePosition.Length()+1.2).
 			SetMin(-ballRelativePosition.Length()),
 	))
 
