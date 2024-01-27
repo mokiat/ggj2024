@@ -16,7 +16,9 @@ func LoadPlayData(audioAPI audio.API, engine *game.Engine, resourceSet *game.Res
 	ballPromise := resourceSet.OpenModelByName("Ball")
 	cowPromise := resourceSet.OpenModelByName("Cow")
 	burstPromise := resourceSet.OpenModelByName("Burst")
-	soundPromise := loadSound(audioAPI, engine, "sound/soundtrack.mp3")
+	soundtrackPromise := loadSound(audioAPI, engine, "sound/soundtrack.mp3")
+	popPromise := loadSound(audioAPI, engine, "sound/pop.mp3")
+	rubbingPromise := loadSound(audioAPI, engine, "sound/rubbing.mp3")
 
 	result := async.NewPromise[*PlayData]()
 	go func() {
@@ -27,7 +29,9 @@ func LoadPlayData(audioAPI audio.API, engine *game.Engine, resourceSet *game.Res
 			ballPromise.Inject(&data.Ball),
 			cowPromise.Inject(&data.Cow),
 			burstPromise.Inject(&data.Burst),
-			soundPromise.Inject(&data.Soundtrack),
+			soundtrackPromise.Inject(&data.Soundtrack),
+			popPromise.Inject(&data.Pop),
+			rubbingPromise.Inject(&data.Rubbing),
 		)
 		if err != nil {
 			result.Fail(err)
@@ -45,6 +49,8 @@ type PlayData struct {
 	Cow        *game.ModelDefinition
 	Burst      *game.ModelDefinition
 	Soundtrack audio.Media
+	Pop        audio.Media
+	Rubbing    audio.Media
 }
 
 func loadSound(audioAPI audio.API, engine *game.Engine, name string) async.Promise[audio.Media] {

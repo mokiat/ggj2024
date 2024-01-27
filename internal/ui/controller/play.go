@@ -34,6 +34,8 @@ func NewPlayController(window app.Window, audioAPI audio.API, engine *game.Engin
 		audioAPI: audioAPI,
 		engine:   engine,
 		playData: playData,
+
+		lastRubbingTime: time.Now().Add(-time.Minute),
 	}
 }
 
@@ -64,6 +66,9 @@ type PlayController struct {
 	camera  *graphics.Camera
 
 	soundtrackPlayback audio.Playback
+	popSound           audio.Media
+	rubbingSound       audio.Media
+	lastRubbingTime    time.Time
 }
 
 func (c *PlayController) Start() {
@@ -182,13 +187,18 @@ func (c *PlayController) Start() {
 	c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
 		Loop: true,
 	})
+	c.popSound = c.playData.Pop
+	c.rubbingSound = c.playData.Rubbing
 
 	c.physicsScene.SubscribeDoubleBodyCollision(func(first physics.Body, second physics.Body, active bool) {
+		var sourceBody physics.Body
 		var targetBody physics.Body
 		switch {
-		case first == c.ball.Body:
+		case first == c.ball.Body || first == c.airplane.Body:
+			sourceBody = first
 			targetBody = second
-		case second == c.ball.Body:
+		case second == c.ball.Body || second == c.airplane.Body:
+			sourceBody = second
 			targetBody = first
 		default:
 			return
@@ -199,7 +209,14 @@ func (c *PlayController) Start() {
 				continue
 			}
 			if cow.Body == targetBody {
-				cow.Burst(c.scene)
+				if sourceBody == c.ball.Body {
+					c.audioAPI.Play(c.popSound, audio.PlayInfo{})
+					cow.Burst(c.scene)
+				}
+				if sourceBody == c.airplane.Body && time.Since(c.lastRubbingTime) > time.Second {
+					c.audioAPI.Play(c.rubbingSound, audio.PlayInfo{})
+					c.lastRubbingTime = time.Now()
+				}
 			}
 		}
 	})
