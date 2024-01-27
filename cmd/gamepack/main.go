@@ -25,12 +25,14 @@ func runTool() error {
 	skyboxRefraction := ensureResource(registry, "c233eac3-96fb-4b40-88c0-5e7f6bf564e1", "cube_texture", "Skybox Refraction")
 
 	modelWorld := ensureResource(registry, "90345c66-2194-4a2e-acea-04b21c2df048", "model", "World")
+	modelAirplane := ensureResource(registry, "41b37fbc-5428-477b-8c7a-8bb58ac34514", "model", "Airplane")
 
 	levelWorld := ensureResource(registry, "21a3cecd-6d04-4fcf-9c9d-e210b97dad3f", "scene", "World")
 	levelWorld.AddDependency(skybox)
 	levelWorld.AddDependency(skyboxReflection)
 	levelWorld.AddDependency(skyboxRefraction)
 	levelWorld.AddDependency(modelWorld)
+	levelWorld.AddDependency(modelAirplane)
 
 	if err := registry.Save(); err != nil {
 		return fmt.Errorf("error saving resources: %w", err)
@@ -72,6 +74,10 @@ func runTool() error {
 	packer.Pipeline(func(p *pack.Pipeline) {
 		p.SaveModelAsset(modelWorld,
 			p.OpenGLTFResource("resources/models/scene.glb"),
+		)
+
+		p.SaveModelAsset(modelAirplane,
+			p.OpenGLTFResource("resources/models/airplane.glb"),
 		)
 	})
 
