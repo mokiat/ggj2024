@@ -22,6 +22,8 @@ import (
 	"github.com/mokiat/lacking/ui"
 )
 
+var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 const (
 	anchorDistance = 6.0
 	cameraDistance = 11.0 * 3
@@ -162,11 +164,10 @@ func (c *PlayController) Start() {
 	})
 	c.airplane.Node.AppendChild(lightNode)
 
-	c.cowSpawner = NewCowSpawner(c.playData.Cow)
+	c.cowSpawner = NewCowSpawner(c.scene, c.playData.Cow)
 
 	for i := 0; i < 100; i++ {
-		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		c.cowSpawner.SpawnCow(c.scene, dprec.NewVec3(
+		c.cowSpawner.SpawnCow(dprec.NewVec3(
 			(random.Float64()*2.0-1.0)*400.0,
 			random.Float64()*200.0,
 			(random.Float64()*2.0-1.0)*400.0,
