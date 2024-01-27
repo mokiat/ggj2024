@@ -85,7 +85,7 @@ func (c *PlayController) Start() {
 
 	c.physicsScene.CreateGlobalAccelerator(acceleration.NewGravityDirection())
 
-	airplanePosition := dprec.NewVec3(0.0, 10.0, 0.0)
+	airplanePosition := dprec.NewVec3(0.0, 100.0, 0.0)
 	airplaneModel := c.scene.CreateModel(game.ModelInfo{
 		Definition:        c.playData.Airplane,
 		Name:              "Airplane",

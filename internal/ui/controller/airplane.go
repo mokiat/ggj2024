@@ -15,17 +15,34 @@ import (
 var (
 	maxAileronAngle  = dprec.Degrees(30) // TODO
 	maxElevatorAngle = dprec.Degrees(30) // TODO
-	maxRudderAngle   = dprec.Degrees(30) // TODO
+	maxRudderAngle   = dprec.Degrees(20) // TODO
 	maxThrust        = 9.8 * 1.5         // 1.5g
 	thrustRampUp     = maxThrust / 2.0
 )
 
 func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.Model, position dprec.Vec3) *Airplane {
+	var (
+		airplaneMass            = 1500.0
+		airplaneMomentOfInertia = physics.SymmetricMomentOfInertia(1500.0 / 2.0)
+
+		aileronMass            = 25.0
+		aileronMomentOfInertia = physics.SolidSphereMomentOfInertia(50.0, 0.4)
+
+		elevatorMass            = 50.0
+		elevatorMomentOfInertia = physics.SolidSphereMomentOfInertia(100.0, 0.4)
+
+		rudderMass            = 25.0
+		rudderMomentOfInertia = physics.SolidSphereMomentOfInertia(100.0, 0.4)
+
+		counterweigthMass            = 100.0
+		counterweightMomentOfInertia = physics.SolidSphereMomentOfInertia(10.0, 0.4)
+	)
+
 	collisionGroup := physics.NewCollisionGroup()
 
 	airplaneBodyDef := physicsScene.Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
-		Mass:                   1500.0,
-		MomentOfInertia:        physics.SymmetricMomentOfInertia(1500.0 / 2.0),
+		Mass:                   airplaneMass,
+		MomentOfInertia:        airplaneMomentOfInertia,
 		DragFactor:             0.0, // TODO
 		AngularDragFactor:      0.0, // TODO
 		RestitutionCoefficient: 0.0,
@@ -65,10 +82,10 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	})
 
 	aileronBodyDef := physicsScene.Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
-		Mass:                   25.0,
-		MomentOfInertia:        physics.SolidSphereMomentOfInertia(50.0, 0.4),
+		Mass:                   aileronMass,
+		MomentOfInertia:        aileronMomentOfInertia,
 		DragFactor:             0.0, // TODO
-		AngularDragFactor:      1.0, // TODO
+		AngularDragFactor:      0.0, // TODO
 		RestitutionCoefficient: 0.0,
 		AerodynamicShapes: []physics.AerodynamicShape{
 			physics.NewAerodynamicShape(
@@ -82,8 +99,8 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	})
 
 	elevatorBodyDef := physicsScene.Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
-		Mass:                   50.0,
-		MomentOfInertia:        physics.SolidSphereMomentOfInertia(100.0, 0.4),
+		Mass:                   elevatorMass,
+		MomentOfInertia:        elevatorMomentOfInertia,
 		DragFactor:             0.0, // TODO
 		AngularDragFactor:      0.0, // TODO
 		RestitutionCoefficient: 0.0,
@@ -99,8 +116,8 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	})
 
 	rudderBodyDef := physicsScene.Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
-		Mass:                   25.0,
-		MomentOfInertia:        physics.SolidSphereMomentOfInertia(100.0, 0.4),
+		Mass:                   rudderMass,
+		MomentOfInertia:        rudderMomentOfInertia,
 		DragFactor:             0.0, // TODO
 		AngularDragFactor:      0.0, // TODO
 		RestitutionCoefficient: 0.0,
@@ -116,8 +133,8 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	})
 
 	counterweightBodyDef := physicsScene.Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
-		Mass:                   300.0,
-		MomentOfInertia:        physics.SolidSphereMomentOfInertia(10.0, 0.4),
+		Mass:                   counterweigthMass,
+		MomentOfInertia:        counterweightMomentOfInertia,
 		DragFactor:             0.0,
 		AngularDragFactor:      0.0,
 		RestitutionCoefficient: 0.0,
