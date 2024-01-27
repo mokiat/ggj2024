@@ -41,13 +41,9 @@ func (c *introScreenComponent) OnCreate() {
 
 	co.After(c.Scope(), time.Second, func() {
 		promise := playModel.DataPromise()
-		if promise.Ready() {
-			appModel.SetActiveView(model.ViewNamePlay)
-		} else {
-			loadingModel.SetPromise(model.ToLoadingPromise(promise))
-			loadingModel.SetNextViewName(model.ViewNamePlay)
-			appModel.SetActiveView(model.ViewNameLoading)
-		}
+		loadingModel.SetPromise(model.ToLoadingPromise(promise))
+		loadingModel.SetNextViewName(model.ViewNamePlay)
+		appModel.SetActiveView(model.ViewNameLoading)
 	})
 }
 

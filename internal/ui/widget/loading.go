@@ -13,7 +13,14 @@ var Loading = co.Define(&loadingComponent{})
 type loadingComponent struct {
 	co.BaseComponent
 
-	angle sprec.Angle
+	backImage  *ui.Image
+	frontImage *ui.Image
+	angle      sprec.Angle
+}
+
+func (c *loadingComponent) OnCreate() {
+	c.backImage = co.OpenImage(c.Scope(), "ui/images/loading-back.png")
+	c.frontImage = co.OpenImage(c.Scope(), "ui/images/loading-front.png")
 }
 
 func (c *loadingComponent) Render() co.Instance {
@@ -21,7 +28,7 @@ func (c *loadingComponent) Render() co.Instance {
 		co.WithLayoutData(c.Properties().LayoutData())
 		co.WithData(std.ElementData{
 			Essence:   c,
-			IdealSize: opt.V(ui.NewSize(300, 300)),
+			IdealSize: opt.V(ui.NewSize(256, 256)),
 		})
 		co.WithChildren(c.Properties().Children())
 	})
@@ -29,7 +36,7 @@ func (c *loadingComponent) Render() co.Instance {
 
 func (c *loadingComponent) OnRender(element *ui.Element, canvas *ui.Canvas) {
 	elapsedTime := canvas.ElapsedTime()
-	c.angle += sprec.Degrees(float32(elapsedTime.Seconds()) * 100.0)
+	c.angle += sprec.Degrees(float32(elapsedTime.Seconds()) * 360.0 * 2.0)
 
 	drawBounds := canvas.DrawBounds(element, false)
 
@@ -41,15 +48,15 @@ func (c *loadingComponent) OnRender(element *ui.Element, canvas *ui.Canvas) {
 		drawBounds.Size,
 	)
 	canvas.Fill(ui.Fill{
-		Rule:  ui.FillRuleSimple,
-		Color: ui.Red(),
+		Rule:        ui.FillRuleSimple,
+		Color:       ui.White(),
+		Image:       c.backImage,
+		ImageOffset: sprec.ZeroVec2(),
+		ImageSize:   drawBounds.Size,
 	})
 
-	// circleImage := co.OpenImage(c.Scope(), "ui/images/loading-circle.png")
-	// circleImageSize := circleImage.Size()
-	// circleSize := sprec.NewVec2(float32(circleImageSize.Width), float32(circleImageSize.Height))
 	canvas.Push()
-	canvas.Translate(sprec.NewVec2(150.0, 150.0))
+	canvas.Translate(sprec.NewVec2(128.0, 128.0))
 	canvas.Rotate(c.angle)
 	canvas.Reset()
 	canvas.Rectangle(
@@ -57,8 +64,11 @@ func (c *loadingComponent) OnRender(element *ui.Element, canvas *ui.Canvas) {
 		sprec.NewVec2(256.0, 256.0),
 	)
 	canvas.Fill(ui.Fill{
-		Rule:  ui.FillRuleSimple,
-		Color: ui.Green(),
+		Rule:        ui.FillRuleSimple,
+		Color:       ui.White(),
+		Image:       c.frontImage,
+		ImageOffset: sprec.NewVec2(-128.0, -128.0),
+		ImageSize:   sprec.NewVec2(256.0, 256.0),
 	})
 	canvas.Pop()
 
