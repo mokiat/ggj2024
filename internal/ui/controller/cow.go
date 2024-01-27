@@ -37,7 +37,7 @@ type CowSpawner struct {
 	modelDef *game.ModelDefinition
 }
 
-func (s *CowSpawner) SpawnCow(location dprec.Vec3) {
+func (s *CowSpawner) SpawnCow(location dprec.Vec3) *Cow {
 	body := s.scene.Physics().CreateBody(physics.BodyInfo{
 		Name:       "Cow",
 		Definition: s.bodyDef,
@@ -60,4 +60,16 @@ func (s *CowSpawner) SpawnCow(location dprec.Vec3) {
 	model.Root().SetSource(game.BodyNodeSource{
 		Body: body,
 	})
+
+	return &Cow{
+		Body:   body,
+		Model:  model,
+		Active: true,
+	}
+}
+
+type Cow struct {
+	Body   physics.Body
+	Model  *game.Model
+	Active bool
 }

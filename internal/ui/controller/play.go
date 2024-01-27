@@ -59,6 +59,7 @@ type PlayController struct {
 	airplane   *Airplane
 	ball       *Ball
 	cowSpawner *CowSpawner
+	cows       []*Cow
 
 	binNode *hierarchy.Node
 	camera  *graphics.Camera
@@ -167,11 +168,12 @@ func (c *PlayController) Start() {
 	c.cowSpawner = NewCowSpawner(c.scene, c.playData.Cow)
 
 	for i := 0; i < 100; i++ {
-		c.cowSpawner.SpawnCow(dprec.NewVec3(
+		cow := c.cowSpawner.SpawnCow(dprec.NewVec3(
 			(random.Float64()*2.0-1.0)*400.0,
 			random.Float64()*200.0,
 			(random.Float64()*2.0-1.0)*400.0,
 		))
+		c.cows = append(c.cows, cow)
 	}
 
 	runtime.GC()
@@ -184,6 +186,32 @@ func (c *PlayController) Start() {
 
 	c.physicsScene.SubscribeSingleBodyCollision(func(body physics.Body, prop physics.Prop, active bool) {
 		log.Info("Collision between %q and %q: %t", body.Name(), prop.Name(), active)
+	})
+
+	c.physicsScene.SubscribeDoubleBodyCollision(func(first physics.Body, second physics.Body, active bool) {
+		var targetBody physics.Body
+		switch {
+		case first == c.ball.Body:
+			targetBody = second
+			// continue
+		case second == c.ball.Body:
+			targetBody = first
+		default:
+			return
+		}
+
+		for _, cow := range c.cows {
+			if !cow.Active {
+				continue
+			}
+			if cow.Body == targetBody {
+				// TODO: Add to animation
+				cow.Model.Root().SetScale(dprec.ZeroVec3())
+				cow.Body.Delete()
+				cow.Active = false
+			}
+		}
+
 	})
 
 }
