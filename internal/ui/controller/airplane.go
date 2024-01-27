@@ -127,7 +127,7 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	airplaneBody := physicsScene.CreateBody(physics.BodyInfo{
 		Name:       airplaneNode.Name(),
 		Definition: airplaneBodyDef,
-		Position:   airplaneNode.AbsoluteMatrix().Translation(),
+		Position:   dprec.Vec3Sum(position, airplaneNode.AbsoluteMatrix().Translation()),
 		Rotation:   dprec.IdentityQuat(),
 	})
 	airplaneNode.SetSource(game.BodyNodeSource{
@@ -163,20 +163,19 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	))
 
 	leftAileronNode := model.Root().FindNode("LeftAileron")
+	leftAileronRelativePosition := dprec.Vec3Diff(
+		leftAileronNode.AbsoluteMatrix().Translation(),
+		airplaneNode.AbsoluteMatrix().Translation(),
+	)
 	leftAileronBody := physicsScene.CreateBody(physics.BodyInfo{
 		Name:       leftAileronNode.Name(),
 		Definition: aileronBodyDef,
-		Position:   leftAileronNode.AbsoluteMatrix().Translation(),
+		Position:   dprec.Vec3Sum(airplaneBody.Position(), leftAileronRelativePosition),
 		Rotation:   dprec.IdentityQuat(),
 	})
 	leftAileronNode.SetSource(game.BodyNodeSource{
 		Body: leftAileronBody,
 	})
-
-	leftAileronRelativePosition := dprec.Vec3Diff(
-		leftAileronNode.AbsoluteMatrix().Translation(),
-		airplaneNode.AbsoluteMatrix().Translation(),
-	)
 	leftAileronRotation := constraint.NewMatchDirections().
 		SetPrimaryDirection(dprec.BasisZVec3()).
 		SetSecondaryDirection(dprec.BasisZVec3())
@@ -203,20 +202,19 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	))
 
 	rightAileronNode := model.Root().FindNode("RightAileron")
+	rightAileronRelativePosition := dprec.Vec3Diff(
+		rightAileronNode.AbsoluteMatrix().Translation(),
+		airplaneNode.AbsoluteMatrix().Translation(),
+	)
 	rightAileronBody := physicsScene.CreateBody(physics.BodyInfo{
 		Name:       rightAileronNode.Name(),
 		Definition: aileronBodyDef,
-		Position:   rightAileronNode.AbsoluteMatrix().Translation(),
+		Position:   dprec.Vec3Sum(airplaneBody.Position(), rightAileronRelativePosition),
 		Rotation:   dprec.IdentityQuat(),
 	})
 	rightAileronNode.SetSource(game.BodyNodeSource{
 		Body: rightAileronBody,
 	})
-
-	rightAileronRelativePosition := dprec.Vec3Diff(
-		rightAileronNode.AbsoluteMatrix().Translation(),
-		airplaneNode.AbsoluteMatrix().Translation(),
-	)
 	rightAileronRotation := constraint.NewMatchDirections().
 		SetPrimaryDirection(dprec.BasisZVec3()).
 		SetSecondaryDirection(dprec.BasisZVec3())
@@ -243,24 +241,22 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 	))
 
 	elevatorNode := model.Root().FindNode("Elevators")
+	elevatorRelativePosition := dprec.Vec3Diff(
+		elevatorNode.AbsoluteMatrix().Translation(),
+		airplaneNode.AbsoluteMatrix().Translation(),
+	)
 	elevatorBody := physicsScene.CreateBody(physics.BodyInfo{
 		Name:       elevatorNode.Name(),
 		Definition: elevatorBodyDef,
-		Position:   elevatorNode.AbsoluteMatrix().Translation(),
+		Position:   dprec.Vec3Sum(airplaneBody.Position(), elevatorRelativePosition),
 		Rotation:   dprec.IdentityQuat(),
 	})
 	elevatorNode.SetSource(game.BodyNodeSource{
 		Body: elevatorBody,
 	})
-
-	elevatorRelativePosition := dprec.Vec3Diff(
-		elevatorNode.AbsoluteMatrix().Translation(),
-		airplaneNode.AbsoluteMatrix().Translation(),
-	)
 	elevatorRotation := constraint.NewMatchDirections().
 		SetPrimaryDirection(dprec.BasisZVec3()).
 		SetSecondaryDirection(dprec.BasisZVec3())
-
 	physicsScene.CreateDoubleBodyConstraint(airplaneBody, elevatorBody, constraint.NewPairCombined(
 		constraint.NewMatchDirectionOffset().
 			SetPrimaryRadius(elevatorRelativePosition).
@@ -283,27 +279,24 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 		elevatorRotation,
 	))
 
-	rudderRotation := constraint.NewMatchDirections().
-		SetPrimaryDirection(dprec.BasisZVec3()).
-		SetSecondaryDirection(dprec.BasisZVec3())
-
 	rudderNode := model.FindNode("Rudder")
-	leftRudderBody := physicsScene.CreateBody(physics.BodyInfo{
-		Name:       "Rudder",
-		Definition: rudderBodyDef,
-		Position:   rudderNode.AbsoluteMatrix().Translation(),
-		Rotation:   dprec.IdentityQuat(),
-	})
-	rudderNode.SetSource(game.BodyNodeSource{
-		Body: leftRudderBody,
-	})
-
 	rudderRelativePosition := dprec.Vec3Diff(
 		rudderNode.AbsoluteMatrix().Translation(),
 		airplaneNode.AbsoluteMatrix().Translation(),
 	)
-
-	physicsScene.CreateDoubleBodyConstraint(airplaneBody, leftRudderBody, constraint.NewPairCombined(
+	rudderBody := physicsScene.CreateBody(physics.BodyInfo{
+		Name:       "Rudder",
+		Definition: rudderBodyDef,
+		Position:   dprec.Vec3Sum(airplaneBody.Position(), rudderRelativePosition),
+		Rotation:   dprec.IdentityQuat(),
+	})
+	rudderNode.SetSource(game.BodyNodeSource{
+		Body: rudderBody,
+	})
+	rudderRotation := constraint.NewMatchDirections().
+		SetPrimaryDirection(dprec.BasisZVec3()).
+		SetSecondaryDirection(dprec.BasisZVec3())
+	physicsScene.CreateDoubleBodyConstraint(airplaneBody, rudderBody, constraint.NewPairCombined(
 		constraint.NewMatchDirectionOffset().
 			SetPrimaryRadius(rudderRelativePosition).
 			SetSecondaryRadius(dprec.ZeroVec3()).
@@ -325,14 +318,17 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 		rudderRotation,
 	))
 
+	properllerNode := model.FindNode("Propeller")
+
 	entity := ecsScene.CreateEntity()
 	entity.SetComponent(preset.NodeComponentID, &preset.NodeComponent{
 		Node: airplaneNode,
 	})
 
 	return &Airplane{
-		Entity: entity,
-		Node:   airplaneNode,
+		Entity:        entity,
+		Node:          airplaneNode,
+		PropellerNode: properllerNode,
 
 		Body:                      airplaneBody,
 		LeftAileronRotConstraint:  leftAileronRotation,
@@ -343,8 +339,9 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 }
 
 type Airplane struct {
-	Entity *ecs.Entity
-	Node   *hierarchy.Node
+	Entity        *ecs.Entity
+	Node          *hierarchy.Node
+	PropellerNode *hierarchy.Node
 
 	Body                      physics.Body
 	LeftAileronRotConstraint  *constraint.MatchDirections
@@ -418,6 +415,14 @@ func (c *AirplaneGamepadController) Update(elapsedSeconds float64) {
 	c.airplane.RudderAngle = dprec.Angle(0)
 	c.airplane.RudderAngle -= dprec.Angle(c.gamepad.LeftTrigger()) * maxRudderAngle
 	c.airplane.RudderAngle += dprec.Angle(c.gamepad.RightTrigger()) * maxRudderAngle
+
+	// Propeller
+	rotationSpeed := 360 * (1.0 + c.airplane.Thrust) * elapsedSeconds
+	rotation := dprec.RotationQuat(dprec.Degrees(rotationSpeed), dprec.BasisZVec3())
+	c.airplane.PropellerNode.SetRotation(dprec.QuatProd(
+		c.airplane.PropellerNode.Rotation(),
+		rotation,
+	))
 }
 
 type AirplaneMouseController struct{} // TODO

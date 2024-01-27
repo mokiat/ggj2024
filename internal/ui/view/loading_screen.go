@@ -27,7 +27,7 @@ func (c *loadingScreenComponent) OnCreate() {
 	screenData := co.GetData[LoadingScreenData](c.Properties())
 	appModel := screenData.AppModel
 	loadingModel := screenData.LoadingModel
-	co.After(c.Scope(), 2*time.Second, func() {
+	co.After(c.Scope(), time.Millisecond, func() {
 		loadingModel.Promise().OnReady(func() {
 			co.Schedule(c.Scope(), func() {
 				appModel.SetActiveView(loadingModel.NextViewName())

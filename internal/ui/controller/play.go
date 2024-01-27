@@ -77,25 +77,6 @@ func (c *PlayController) Start() {
 	c.physicsScene = c.scene.Physics()
 	c.ecsScene = c.scene.ECS()
 
-	sunLight := c.scene.Graphics().CreateDirectionalLight(graphics.DirectionalLightInfo{
-		EmitColor: dprec.NewVec3(3, 3, 3),
-		EmitRange: 16000, // FIXME
-	})
-
-	lightNode := hierarchy.NewNode()
-	lightRotation := dprec.QuatProd(
-		dprec.RotationQuat(dprec.Degrees(-55), dprec.BasisXVec3()),
-		dprec.RotationQuat(dprec.Degrees(180), dprec.BasisZVec3()),
-	)
-	lightPosition := dprec.QuatVec3Rotation(lightRotation, dprec.NewVec3(0.0, 0.0, 100.0))
-	lightNode.SetPosition(lightPosition)
-	lightNode.SetRotation(lightRotation)
-	lightNode.SetTarget(game.DirectionalLightNodeTarget{
-		Light:                 sunLight,
-		UseOnlyParentPosition: true,
-	})
-	c.scene.Root().AppendChild(lightNode)
-
 	sceneModel := c.scene.FindModel("Content")
 	c.scene.Root().AppendChild(sceneModel.Root())
 
@@ -148,6 +129,23 @@ func (c *PlayController) Start() {
 		YawAngle:       dprec.Degrees(0),
 		Zoom:           1.0,
 	})
+
+	lightNode := c.scene.Root().FindNode("Light")
+	lightNode.UseTransformation(func(node *hierarchy.Node) dprec.Mat4 {
+		base := node.BaseAbsoluteMatrix()
+		// Remove parent's rotation
+		base.M11 = 1.0
+		base.M12 = 0.0
+		base.M13 = 0.0
+		base.M21 = 0.0
+		base.M22 = 1.0
+		base.M23 = 0.0
+		base.M31 = 0.0
+		base.M32 = 0.0
+		base.M33 = 1.0
+		return dprec.Mat4Prod(base, node.Matrix())
+	})
+	airplaneNode.AppendChild(lightNode)
 
 	runtime.GC()
 	c.engine.ResetDeltaTime()
