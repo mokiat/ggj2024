@@ -188,7 +188,6 @@ func (c *PlayController) Start() {
 		switch {
 		case first == c.ball.Body:
 			targetBody = second
-			// continue
 		case second == c.ball.Body:
 			targetBody = first
 		default:
