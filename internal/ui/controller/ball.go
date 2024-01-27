@@ -31,9 +31,17 @@ func NewBall(physicsScene *physics.Scene, airplane *Airplane, model *game.Model)
 		FrictionCoefficient:    0.0,
 		RestitutionCoefficient: 0.0,
 		CollisionGroup:         airplane.CollisionGroup,
-		DragFactor:             0.0,                          // TODO
-		AngularDragFactor:      0.0,                          // TODO
-		AerodynamicShapes:      []physics.AerodynamicShape{}, // TODO
+		DragFactor:             1.0,
+		AngularDragFactor:      0.0,
+		AerodynamicShapes: []physics.AerodynamicShape{
+			physics.NewAerodynamicShape(
+				physics.NewTransform(
+					dprec.NewVec3(0.0, 0.0, 0.0),
+					dprec.RotationQuat(dprec.Degrees(20), dprec.BasisXVec3()),
+				),
+				physics.NewSurfaceAerodynamicShape(1.0, 0.1, 0.5),
+			),
+		},
 		CollisionSpheres: []collision.Sphere{
 			collision.NewSphere(dprec.ZeroVec3(), 1.0),
 		},
@@ -57,7 +65,7 @@ func NewBall(physicsScene *physics.Scene, airplane *Airplane, model *game.Model)
 		Rotation:   airplane.Body.Rotation(),
 	})
 
-	physicsScene.CreateDoubleBodyConstraint(airplane.Body, hingeBody, constraint.NewPairCombined(
+	physicsScene.CreateDoubleBodyConstraint(hingeBody, airplane.Body, constraint.NewPairCombined(
 		constraint.NewMatchDirectionOffset().
 			SetPrimaryRadius(dprec.ZeroVec3()).
 			SetSecondaryRadius(dprec.ZeroVec3()).
@@ -73,11 +81,17 @@ func NewBall(physicsScene *physics.Scene, airplane *Airplane, model *game.Model)
 			SetSecondaryRadius(dprec.ZeroVec3()).
 			SetDirection(dprec.BasisYVec3()).
 			SetOffset(0.0),
-		constraint.NewMatchDirections(),
+		constraint.NewCopyRotation(),
 	))
 
+	physicsScene.CreateDoubleBodyConstraint(ballBody, airplane.Body, constraint.NewPairCombined(
+		constraint.NewCopyRotation(),
+	))
 	physicsScene.CreateDoubleBodyConstraint(airplane.Body, ballBody, constraint.NewPairCombined(
-		constraint.NewMatchDirections(),
+		constraint.NewClampDirectionOffset().
+			SetDirection(dprec.BasisYVec3()).
+			SetMax(-ballRelativePosition.Length()+2.0).
+			SetMin(-ballRelativePosition.Length()),
 	))
 
 	physicsScene.CreateDoubleBodyConstraint(hingeBody, ballBody, constraint.NewPairCombined(
