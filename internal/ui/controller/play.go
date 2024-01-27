@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"math/rand"
 	"runtime"
 	"time"
 
@@ -53,8 +54,9 @@ type PlayController struct {
 	airplaneGamepadController *AirplaneGamepadController
 	// TODO: airplaneMouseController *AirplaneMouseController
 
-	airplane *Airplane
-	ball     *Ball
+	airplane   *Airplane
+	ball       *Ball
+	cowSpawner *CowSpawner
 
 	binNode *hierarchy.Node
 	camera  *graphics.Camera
@@ -159,6 +161,17 @@ func (c *PlayController) Start() {
 		return dprec.Mat4Prod(base, node.Matrix())
 	})
 	c.airplane.Node.AppendChild(lightNode)
+
+	c.cowSpawner = NewCowSpawner(c.playData.Cow)
+
+	for i := 0; i < 100; i++ {
+		random := rand.New(rand.NewSource(time.Now().UnixNano()))
+		c.cowSpawner.SpawnCow(c.scene, dprec.NewVec3(
+			(random.Float64()*2.0-1.0)*400.0,
+			random.Float64()*200.0,
+			(random.Float64()*2.0-1.0)*400.0,
+		))
+	}
 
 	runtime.GC()
 	c.engine.ResetDeltaTime()

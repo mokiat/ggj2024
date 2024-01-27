@@ -27,6 +27,7 @@ func runTool() error {
 	modelWorld := ensureResource(registry, "90345c66-2194-4a2e-acea-04b21c2df048", "model", "World")
 	modelAirplane := ensureResource(registry, "41b37fbc-5428-477b-8c7a-8bb58ac34514", "model", "Airplane")
 	modelBall := ensureResource(registry, "61cbde74-436e-4306-b3cc-b0c2459dbecb", "model", "Ball")
+	modelCow := ensureResource(registry, "4d6c54e9-9152-4c35-8f33-8fd9f898b091", "model", "Cow")
 
 	levelWorld := ensureResource(registry, "21a3cecd-6d04-4fcf-9c9d-e210b97dad3f", "scene", "World")
 	levelWorld.AddDependency(skybox)
@@ -84,6 +85,10 @@ func runTool() error {
 
 		p.SaveModelAsset(modelBall,
 			p.OpenGLTFResource("resources/models/ball.glb"),
+		)
+
+		p.SaveModelAsset(modelCow,
+			p.OpenGLTFResource("resources/models/cow.glb"),
 		)
 	})
 
