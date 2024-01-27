@@ -2,6 +2,7 @@ package controller
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/mokiat/gomath/dprec"
 	"github.com/mokiat/lacking/game"
@@ -10,7 +11,7 @@ import (
 	"github.com/mokiat/lacking/game/physics/constraint"
 )
 
-func NewCowSpawner(scene *game.Scene, modelDef *game.ModelDefinition) *CowSpawner {
+func NewCowSpawner(scene *game.Scene, modelDef, burstDef *game.ModelDefinition) *CowSpawner {
 	bodyDef := scene.Physics().Engine().CreateBodyDefinition(physics.BodyDefinitionInfo{
 		Mass:                   100.0,
 		MomentOfInertia:        physics.SymmetricMomentOfInertia(100.0 / 2.0),
@@ -26,6 +27,7 @@ func NewCowSpawner(scene *game.Scene, modelDef *game.ModelDefinition) *CowSpawne
 	return &CowSpawner{
 		scene:    scene,
 		bodyDef:  bodyDef,
+		burstDef: burstDef,
 		modelDef: modelDef,
 	}
 }
@@ -35,6 +37,7 @@ type CowSpawner struct {
 
 	bodyDef  *physics.BodyDefinition
 	modelDef *game.ModelDefinition
+	burstDef *game.ModelDefinition
 }
 
 func (s *CowSpawner) SpawnCow(location dprec.Vec3) *Cow {
@@ -61,15 +64,47 @@ func (s *CowSpawner) SpawnCow(location dprec.Vec3) *Cow {
 		Body: body,
 	})
 
+	burstModel := s.scene.CreateModel(game.ModelInfo{
+		Definition:        s.burstDef,
+		Name:              "Burst",
+		Position:          dprec.NewVec3(0.0, -1000.0, 0.0),
+		Rotation:          dprec.IdentityQuat(),
+		Scale:             dprec.NewVec3(1.0, 1.0, 1.0),
+		IsDynamic:         true,
+		PrepareAnimations: true,
+	})
+
 	return &Cow{
-		Body:   body,
-		Model:  model,
-		Active: true,
+		Body:       body,
+		Model:      model,
+		BurstModel: burstModel,
+		Active:     true,
 	}
 }
 
 type Cow struct {
-	Body   physics.Body
-	Model  *game.Model
-	Active bool
+	Body          physics.Body
+	Model         *game.Model
+	BurstModel    *game.Model
+	Active        bool
+	BurstDuration time.Duration
+}
+
+func (c *Cow) Burst(scene *game.Scene) {
+	c.Active = false
+	c.Body.Delete()
+	c.BurstDuration = time.Second
+	c.BurstModel.Root().SetPosition(c.Model.Root().Position())
+	c.BurstModel.Root().SetRotation(c.Model.Root().Rotation())
+
+	for _, animation := range c.BurstModel.Animations() {
+		scene.PlayAnimation(animation)
+	}
+}
+
+func (c *Cow) Update(elapsedTime time.Duration) {
+	c.BurstDuration -= elapsedTime
+	if c.BurstDuration < 0 {
+		c.BurstModel.Root().SetPosition(dprec.NewVec3(0.0, -1000.0, 0.0))
+	}
 }

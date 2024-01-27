@@ -10,7 +10,6 @@ import (
 	"github.com/mokiat/gomath/sprec"
 	"github.com/mokiat/lacking/app"
 	"github.com/mokiat/lacking/audio"
-	"github.com/mokiat/lacking/debug/log"
 	"github.com/mokiat/lacking/game"
 	"github.com/mokiat/lacking/game/ecs"
 	"github.com/mokiat/lacking/game/graphics"
@@ -26,7 +25,7 @@ var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 const (
 	anchorDistance = 6.0
-	cameraDistance = 11.0 * 3
+	cameraDistance = 11.0 * 5
 )
 
 func NewPlayController(window app.Window, audioAPI audio.API, engine *game.Engine, playData *data.PlayData) *PlayController {
@@ -143,7 +142,7 @@ func (c *PlayController) Start() {
 		AnchorPosition: dprec.Vec3Sum(targetNode.Position(), dprec.NewVec3(0.0, 2.0, -cameraDistance)),
 		AnchorDistance: anchorDistance,
 		CameraDistance: cameraDistance,
-		PitchAngle:     dprec.Degrees(-25),
+		PitchAngle:     dprec.Degrees(-30),
 		YawAngle:       dprec.Degrees(0),
 		Zoom:           1.0,
 	})
@@ -165,7 +164,7 @@ func (c *PlayController) Start() {
 	})
 	c.airplane.Node.AppendChild(lightNode)
 
-	c.cowSpawner = NewCowSpawner(c.scene, c.playData.Cow)
+	c.cowSpawner = NewCowSpawner(c.scene, c.playData.Cow, c.playData.Burst)
 
 	for i := 0; i < 100; i++ {
 		cow := c.cowSpawner.SpawnCow(dprec.NewVec3(
@@ -182,10 +181,6 @@ func (c *PlayController) Start() {
 
 	c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
 		Loop: true,
-	})
-
-	c.physicsScene.SubscribeSingleBodyCollision(func(body physics.Body, prop physics.Prop, active bool) {
-		log.Info("Collision between %q and %q: %t", body.Name(), prop.Name(), active)
 	})
 
 	c.physicsScene.SubscribeDoubleBodyCollision(func(first physics.Body, second physics.Body, active bool) {
@@ -205,15 +200,10 @@ func (c *PlayController) Start() {
 				continue
 			}
 			if cow.Body == targetBody {
-				// TODO: Add to animation
-				cow.Model.Root().SetScale(dprec.ZeroVec3())
-				cow.Body.Delete()
-				cow.Active = false
+				cow.Burst(c.scene)
 			}
 		}
-
 	})
-
 }
 
 func (c *PlayController) Stop() {
@@ -241,4 +231,7 @@ func (c *PlayController) onPreUpdate(elapsedTime time.Duration) {
 
 func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 	c.followCameraSystem.Update(elapsedTime.Seconds())
+	for _, cow := range c.cows {
+		cow.Update(elapsedTime)
+	}
 }

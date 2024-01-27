@@ -28,6 +28,7 @@ func runTool() error {
 	modelAirplane := ensureResource(registry, "41b37fbc-5428-477b-8c7a-8bb58ac34514", "model", "Airplane")
 	modelBall := ensureResource(registry, "61cbde74-436e-4306-b3cc-b0c2459dbecb", "model", "Ball")
 	modelCow := ensureResource(registry, "4d6c54e9-9152-4c35-8f33-8fd9f898b091", "model", "Cow")
+	modelBurst := ensureResource(registry, "988992d4-2661-468a-baf3-298b1f6764d7", "model", "Burst")
 
 	levelWorld := ensureResource(registry, "21a3cecd-6d04-4fcf-9c9d-e210b97dad3f", "scene", "World")
 	levelWorld.AddDependency(skybox)
@@ -36,6 +37,7 @@ func runTool() error {
 	levelWorld.AddDependency(modelWorld)
 	levelWorld.AddDependency(modelAirplane)
 	levelWorld.AddDependency(modelBall)
+	levelWorld.AddDependency(modelBurst)
 
 	if err := registry.Save(); err != nil {
 		return fmt.Errorf("error saving resources: %w", err)
@@ -89,6 +91,10 @@ func runTool() error {
 
 		p.SaveModelAsset(modelCow,
 			p.OpenGLTFResource("resources/models/cow.glb"),
+		)
+
+		p.SaveModelAsset(modelBurst,
+			p.OpenGLTFResource("resources/models/burst.glb"),
 		)
 	})
 
