@@ -36,6 +36,10 @@ func NewPlayController(window app.Window, audioAPI audio.API, engine *game.Engin
 		playData: playData,
 
 		lastRubbingTime: time.Now().Add(-time.Minute),
+
+		introAfter: 1 * time.Second,
+		pilotAfter: 90 * time.Second,
+		towerAfter: 45 * time.Second,
 	}
 }
 
@@ -69,6 +73,13 @@ type PlayController struct {
 	popSound           audio.Media
 	rubbingSound       audio.Media
 	lastRubbingTime    time.Time
+
+	introSound audio.Media
+	introAfter time.Duration
+	pilotSound audio.Media
+	pilotAfter time.Duration
+	towerSound audio.Media
+	towerAfter time.Duration
 }
 
 func (c *PlayController) Start() {
@@ -189,6 +200,9 @@ func (c *PlayController) Start() {
 	})
 	c.popSound = c.playData.Pop
 	c.rubbingSound = c.playData.Rubbing
+	c.introSound = c.playData.IntroSound
+	c.pilotSound = c.playData.PilotSound
+	c.towerSound = c.playData.TowerSound
 
 	c.physicsScene.SubscribeDoubleBodyCollision(func(first physics.Body, second physics.Body, active bool) {
 		var sourceBody physics.Body
@@ -249,5 +263,20 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 	c.followCameraSystem.Update(elapsedTime.Seconds())
 	for _, cow := range c.cows {
 		cow.Update(elapsedTime)
+	}
+	c.introAfter -= elapsedTime
+	if c.introAfter < 0 {
+		c.audioAPI.Play(c.introSound, audio.PlayInfo{})
+		c.introAfter = 24 * time.Hour
+	}
+	c.pilotAfter -= elapsedTime
+	if c.pilotAfter < 0 {
+		c.audioAPI.Play(c.pilotSound, audio.PlayInfo{})
+		c.pilotAfter = 24 * time.Hour
+	}
+	c.towerAfter -= elapsedTime
+	if c.towerAfter < 0 {
+		c.audioAPI.Play(c.towerSound, audio.PlayInfo{})
+		c.towerAfter = 24 * time.Hour
 	}
 }
