@@ -9,6 +9,7 @@ import (
 	"github.com/mokiat/gomath/sprec"
 	"github.com/mokiat/lacking/app"
 	"github.com/mokiat/lacking/audio"
+	"github.com/mokiat/lacking/debug/log"
 	"github.com/mokiat/lacking/game"
 	"github.com/mokiat/lacking/game/ecs"
 	"github.com/mokiat/lacking/game/graphics"
@@ -53,6 +54,7 @@ type PlayController struct {
 	// TODO: airplaneMouseController *AirplaneMouseController
 
 	airplane *Airplane
+	ball     *Ball
 
 	binNode *hierarchy.Node
 	camera  *graphics.Camera
@@ -96,7 +98,17 @@ func (c *PlayController) Start() {
 		PrepareAnimations: true,
 	})
 	c.airplane = NewAirplane(c.physicsScene, c.ecsScene, airplaneModel, airplanePosition)
-	airplaneNode := c.airplane.Node
+
+	ballModel := c.scene.CreateModel(game.ModelInfo{
+		Definition:        c.playData.Ball,
+		Name:              "Ball",
+		Position:          dprec.ZeroVec3(),
+		Rotation:          dprec.IdentityQuat(),
+		Scale:             dprec.NewVec3(1.0, 1.0, 1.0),
+		IsDynamic:         true,
+		PrepareAnimations: true,
+	})
+	c.ball = NewBall(c.physicsScene, c.airplane, ballModel)
 
 	gamepad := c.window.Gamepads()[0]
 	if gamepad.Connected() && gamepad.Supported() {
@@ -120,9 +132,10 @@ func (c *PlayController) Start() {
 	ecs.AttachComponent(cameraEntity, &preset.NodeComponent{
 		Node: cameraNode,
 	})
+	targetNode := c.airplane.Node
 	ecs.AttachComponent(cameraEntity, &preset.FollowCameraComponent{
-		Target:         airplaneNode,
-		AnchorPosition: dprec.Vec3Sum(airplaneNode.Position(), dprec.NewVec3(0.0, 2.0, -cameraDistance)),
+		Target:         targetNode,
+		AnchorPosition: dprec.Vec3Sum(targetNode.Position(), dprec.NewVec3(0.0, 2.0, -cameraDistance)),
 		AnchorDistance: anchorDistance,
 		CameraDistance: cameraDistance,
 		PitchAngle:     dprec.Degrees(-25),
@@ -145,7 +158,7 @@ func (c *PlayController) Start() {
 		base.M33 = 1.0
 		return dprec.Mat4Prod(base, node.Matrix())
 	})
-	airplaneNode.AppendChild(lightNode)
+	c.airplane.Node.AppendChild(lightNode)
 
 	runtime.GC()
 	c.engine.ResetDeltaTime()
@@ -154,6 +167,11 @@ func (c *PlayController) Start() {
 	// c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
 	// 	Loop: true,
 	// })
+
+	c.physicsScene.SubscribeSingleBodyCollision(func(body physics.Body, prop physics.Prop, active bool) {
+		log.Info("Collision between %q and %q: %t", body.Name(), prop.Name(), active)
+	})
+
 }
 
 func (c *PlayController) Stop() {

@@ -347,6 +347,8 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 		Node:          airplaneNode,
 		PropellerNode: properllerNode,
 
+		CollisionGroup: collisionGroup,
+
 		Body:                      airplaneBody,
 		LeftAileronRotConstraint:  leftAileronRotation,
 		RightAileronRotConstraint: rightAileronRotation,
@@ -359,6 +361,8 @@ type Airplane struct {
 	Entity        *ecs.Entity
 	Node          *hierarchy.Node
 	PropellerNode *hierarchy.Node
+
+	CollisionGroup int
 
 	Body                      physics.Body
 	LeftAileronRotConstraint  *constraint.MatchDirections
