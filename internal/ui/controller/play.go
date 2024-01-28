@@ -28,6 +28,10 @@ const (
 	cameraDistance = 11.0 * 5
 )
 
+const (
+	defeatAfter = 120 * time.Second
+)
+
 func NewPlayController(window app.Window, audioAPI audio.API, engine *game.Engine, playData *data.PlayData) *PlayController {
 	return &PlayController{
 		window:   window,
@@ -80,9 +84,17 @@ type PlayController struct {
 	pilotAfter time.Duration
 	towerSound audio.Media
 	towerAfter time.Duration
+
+	gameTime time.Duration
+
+	onVictory func(time.Duration)
+	onDefeat  func(int)
 }
 
-func (c *PlayController) Start() {
+func (c *PlayController) Start(onVictory func(time.Duration), onDefeat func(int)) {
+	c.onVictory = onVictory
+	c.onDefeat = onDefeat
+
 	c.scene = c.engine.CreateScene()
 	c.scene.Initialize(c.playData.Scene)
 
@@ -243,6 +255,10 @@ func (c *PlayController) Start() {
 	})
 }
 
+func (c *PlayController) Freeze() {
+	c.scene.Freeze()
+}
+
 func (c *PlayController) Stop() {
 	c.soundtrackPlayback.Stop()
 	c.engine.SetActiveScene(nil)
@@ -280,6 +296,10 @@ func (c *PlayController) onPreUpdate(elapsedTime time.Duration) {
 }
 
 func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
+	if c.onVictory == nil || c.onDefeat == nil {
+		return
+	}
+
 	c.followCameraSystem.Update(elapsedTime.Seconds())
 	for _, cow := range c.cows {
 		cow.Update(elapsedTime)
@@ -305,4 +325,29 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 		})
 		c.towerAfter = 24 * time.Hour
 	}
+
+	countCows := c.remainingCows()
+
+	if countCows == 0 {
+		c.onVictory(c.gameTime)
+		c.onVictory = nil
+		return
+	}
+
+	c.gameTime += elapsedTime
+	if c.gameTime > defeatAfter {
+		c.onDefeat(countCows)
+		c.onDefeat = nil
+		return
+	}
+}
+
+func (c *PlayController) remainingCows() int {
+	var count int
+	for _, cow := range c.cows {
+		if cow.Active {
+			count++
+		}
+	}
+	return count
 }

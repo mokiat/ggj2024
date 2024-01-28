@@ -18,14 +18,17 @@ import (
 var PlayScreen = co.Define(&playScreenComponent{})
 
 type PlayScreenData struct {
-	AppModel  *model.Application
-	PlayModel *model.Play
+	AppModel     *model.Application
+	LoadingModel *model.Loading
+	PlayModel    *model.Play
 }
 
 type playScreenComponent struct {
 	co.BaseComponent
 
-	appModel *model.Application
+	appModel     *model.Application
+	loadingModel *model.Loading
+	playModel    *model.Play
 
 	controller *controller.PlayController
 
@@ -39,6 +42,8 @@ func (c *playScreenComponent) OnCreate() {
 	context := co.TypedValue[global.Context](c.Scope())
 	screenData := co.GetData[PlayScreenData](c.Properties())
 	c.appModel = screenData.AppModel
+	c.loadingModel = screenData.LoadingModel
+	c.playModel = screenData.PlayModel
 
 	// FIXME: This may actually panic if there is a third party
 	// waiting / reading on this and it happens to match the Get call.
@@ -48,7 +53,7 @@ func (c *playScreenComponent) OnCreate() {
 		panic(fmt.Errorf("failed to get data: %w", err))
 	}
 	c.controller = controller.NewPlayController(co.Window(c.Scope()).Window, context.AudioAPI, context.Engine, playData)
-	c.controller.Start()
+	c.controller.Start(c.onVictory, c.onDefeat)
 }
 
 func (c *playScreenComponent) OnDelete() {
@@ -101,4 +106,28 @@ func (c *playScreenComponent) Render() co.Instance {
 
 func (c *playScreenComponent) onExit() {
 	co.Window(c.Scope()).Close()
+}
+
+func (c *playScreenComponent) onVictory(gameTime time.Duration) {
+	c.controller.Freeze()
+
+	co.OpenOverlay(c.Scope(), co.New(VictoryScreen, func() {
+		co.WithData(VictoryScreenData{
+			AppModel:     c.appModel,
+			LoadingModel: c.loadingModel,
+			PlayModel:    c.playModel,
+		})
+	}))
+}
+
+func (c *playScreenComponent) onDefeat(remainingCows int) {
+	c.controller.Freeze()
+
+	co.OpenOverlay(c.Scope(), co.New(DefeatScreen, func() {
+		co.WithData(DefeatScreenData{
+			AppModel:     c.appModel,
+			LoadingModel: c.loadingModel,
+			PlayModel:    c.playModel,
+		})
+	}))
 }

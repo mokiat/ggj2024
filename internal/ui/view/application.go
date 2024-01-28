@@ -53,8 +53,9 @@ func (c *applicationComponent) Render() co.Instance {
 
 		co.WithChild(model.ViewNamePlay, co.New(PlayScreen, func() {
 			co.WithData(PlayScreenData{
-				AppModel:  c.appModel,
-				PlayModel: c.playModel,
+				AppModel:     c.appModel,
+				LoadingModel: c.loadingModel,
+				PlayModel:    c.playModel,
 			})
 		}))
 	})
