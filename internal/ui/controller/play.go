@@ -131,9 +131,7 @@ func (c *PlayController) Start() {
 	c.ball = NewBall(c.physicsScene, c.airplane, ballModel)
 
 	gamepad := c.window.Gamepads()[0]
-	if gamepad.Connected() && gamepad.Supported() {
-		c.airplaneGamepadController = NewAirplaneGamepadController(c.airplane, gamepad)
-	}
+	c.airplaneGamepadController = NewAirplaneGamepadController(c.airplane, gamepad)
 
 	c.camera = c.gfxScene.CreateCamera()
 	c.camera.SetFoVMode(graphics.FoVModeHorizontalPlus)
@@ -196,6 +194,7 @@ func (c *PlayController) Start() {
 	c.engine.SetActiveScene(c.scene)
 
 	c.soundtrackPlayback = c.audioAPI.Play(c.playData.Soundtrack, audio.PlayInfo{
+		Gain: 1.0,
 		Loop: true,
 	})
 	c.popSound = c.playData.Pop
@@ -224,11 +223,15 @@ func (c *PlayController) Start() {
 			}
 			if cow.Body == targetBody {
 				if sourceBody == c.ball.Body {
-					c.audioAPI.Play(c.popSound, audio.PlayInfo{})
+					c.audioAPI.Play(c.popSound, audio.PlayInfo{
+						Gain: 1.0,
+					})
 					cow.Burst(c.scene)
 				}
 				if sourceBody == c.airplane.Body && time.Since(c.lastRubbingTime) > time.Second {
-					c.audioAPI.Play(c.rubbingSound, audio.PlayInfo{})
+					c.audioAPI.Play(c.rubbingSound, audio.PlayInfo{
+						Gain: 1.0,
+					})
 					c.lastRubbingTime = time.Now()
 				}
 			}
@@ -266,17 +269,23 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 	}
 	c.introAfter -= elapsedTime
 	if c.introAfter < 0 {
-		c.audioAPI.Play(c.introSound, audio.PlayInfo{})
+		c.audioAPI.Play(c.introSound, audio.PlayInfo{
+			Gain: 1.0,
+		})
 		c.introAfter = 24 * time.Hour
 	}
 	c.pilotAfter -= elapsedTime
 	if c.pilotAfter < 0 {
-		c.audioAPI.Play(c.pilotSound, audio.PlayInfo{})
+		c.audioAPI.Play(c.pilotSound, audio.PlayInfo{
+			Gain: 1.0,
+		})
 		c.pilotAfter = 24 * time.Hour
 	}
 	c.towerAfter -= elapsedTime
 	if c.towerAfter < 0 {
-		c.audioAPI.Play(c.towerSound, audio.PlayInfo{})
+		c.audioAPI.Play(c.towerSound, audio.PlayInfo{
+			Gain: 1.0,
+		})
 		c.towerAfter = 24 * time.Hour
 	}
 }
