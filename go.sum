@@ -40,8 +40,8 @@ github.com/mokiat/lacking v0.18.0 h1:oyRzqvSToRrLAuUGFTC41KOJnFomRhtu922opf4v5n4
 github.com/mokiat/lacking v0.18.0/go.mod h1:6JcRALQBX5JYtnsvNSQjyGfR8zCkqLDZVCDT+Gvvh/E=
 github.com/mokiat/lacking-js v0.18.0 h1:S31UvmxR7Azl72d8QmZ14pwqvdzf4m22ibH//ym1uPw=
 github.com/mokiat/lacking-js v0.18.0/go.mod h1:g1hoFqhLndlAY4OG8OK5xUyQWLQgBEYTOpIqg1TV6Dc=
-github.com/mokiat/lacking-native v0.18.0 h1:zL3GZf3HBhTOshLsr6U5uO7SiWc9XeWhSB/XGDu85oQ=
-github.com/mokiat/lacking-native v0.18.0/go.mod h1:AUFTD8TpQYrkBqcHlUXBfKGktDOYKVJ80WM6KcQRe4g=
+github.com/mokiat/lacking-native v0.18.1 h1:XJYM3j5YOPeczV/zQiF1sewiDmMd8pAp5s3siPSZ7m0=
+github.com/mokiat/lacking-native v0.18.1/go.mod h1:AUFTD8TpQYrkBqcHlUXBfKGktDOYKVJ80WM6KcQRe4g=
 github.com/mokiat/wasmal v0.1.0 h1:oXB0FyLdHx43MMhjDSIHY7gqgVhscBtR+zhtZONNg4c=
 github.com/mokiat/wasmal v0.1.0/go.mod h1:AhqEiyV8XfaVV8momUu+n8BD1wWtyimqutxhoM/wbuk=
 github.com/mokiat/wasmgl v0.5.0 h1:LilOv5A2jp2T51pWRb5xZdgl01z6+J9l/AhmdIxHNa0=

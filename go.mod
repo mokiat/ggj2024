@@ -7,7 +7,7 @@ require (
 	github.com/mokiat/gomath v0.8.1
 	github.com/mokiat/lacking v0.18.0
 	github.com/mokiat/lacking-js v0.18.0
-	github.com/mokiat/lacking-native v0.18.0
+	github.com/mokiat/lacking-native v0.18.1
 )
 
 require (
