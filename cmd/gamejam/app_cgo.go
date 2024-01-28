@@ -30,7 +30,7 @@ func runApplication() error {
 	})
 
 	cfg := glapp.NewConfig("GGJ", 1280, 800)
-	cfg.SetFullscreen(false)
+	cfg.SetFullscreen(true)
 	cfg.SetMaximized(false)
 	cfg.SetMinSize(1280, 800)
 	cfg.SetVSync(true)
