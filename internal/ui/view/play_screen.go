@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mokiat/ggj2024/internal/game/data"
 	"github.com/mokiat/ggj2024/internal/ui/controller"
 	"github.com/mokiat/ggj2024/internal/ui/global"
 	"github.com/mokiat/ggj2024/internal/ui/model"
@@ -152,11 +153,27 @@ func (c *playScreenComponent) Render() co.Instance {
 				Provider: c.controller,
 			})
 		}))
+
+		co.WithChild("reset", co.New(widget.ResetButton, func() {
+			co.WithLayoutData(layout.Data{
+				Top:    opt.V(10),
+				Right:  opt.V(10),
+				Width:  opt.V(115),
+				Height: opt.V(58),
+			})
+			co.WithCallbackData(widget.ResetButtonCallbackData{
+				OnClick: c.onReset,
+			})
+		}))
 	})
 }
 
 func (c *playScreenComponent) onExit() {
-	co.Window(c.Scope()).Close()
+	scope := c.Scope()
+	if scope == nil {
+		return // TODO: Figure out why this case is at all possible.
+	}
+	co.Window(scope).Close()
 }
 
 func (c *playScreenComponent) onVictory(gameTime time.Duration) {
@@ -181,4 +198,20 @@ func (c *playScreenComponent) onDefeat(remainingCows int) {
 			PlayModel:    c.playModel,
 		})
 	}))
+}
+
+func (c *playScreenComponent) onReset() {
+	c.controller.Freeze()
+
+	context := co.TypedValue[global.Context](c.Scope())
+	audioAPI := context.AudioAPI
+	engine := context.Engine
+	resourceSet := context.ResourceSet
+
+	c.playModel.SetDataPromise(data.LoadPlayData(audioAPI, engine, resourceSet))
+
+	promise := c.playModel.DataPromise()
+	c.loadingModel.SetPromise(model.ToLoadingPromise(promise))
+	c.loadingModel.SetNextViewName(model.ViewNamePlay)
+	c.appModel.SetActiveView(model.ViewNameLoading)
 }
