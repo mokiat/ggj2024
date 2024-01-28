@@ -57,9 +57,9 @@ type PlayController struct {
 	physicsScene *physics.Scene
 	ecsScene     *ecs.Scene
 
-	followCameraSystem        *preset.FollowCameraSystem
-	airplaneGamepadController *AirplaneGamepadController
-	// TODO: airplaneMouseController *AirplaneMouseController
+	followCameraSystem         *preset.FollowCameraSystem
+	airplaneGamepadController  *AirplaneGamepadController
+	airplaneKeyboardController *AirplaneKeyboardController
 
 	airplane   *Airplane
 	ball       *Ball
@@ -130,8 +130,7 @@ func (c *PlayController) Start() {
 	})
 	c.ball = NewBall(c.physicsScene, c.airplane, ballModel)
 
-	gamepad := c.window.Gamepads()[0]
-	c.airplaneGamepadController = NewAirplaneGamepadController(c.airplane, gamepad)
+	c.airplaneKeyboardController = NewAirplaneKeyboardController(c.airplane)
 
 	c.camera = c.gfxScene.CreateCamera()
 	c.camera.SetFoVMode(graphics.FoVModeHorizontalPlus)
@@ -145,6 +144,11 @@ func (c *PlayController) Start() {
 	cameraNode.SetTarget(game.CameraNodeTarget{
 		Camera: c.camera,
 	})
+	cameraNode.SetPosition(dprec.Vec3Sum(
+		c.airplane.Body.Position(),
+		dprec.NewVec3(0.0, 50.0, -cameraDistance),
+	))
+	cameraNode.ApplyToTarget(false)
 
 	cameraEntity := c.ecsScene.CreateEntity()
 	ecs.AttachComponent(cameraEntity, &preset.NodeComponent{
@@ -153,7 +157,7 @@ func (c *PlayController) Start() {
 	targetNode := c.airplane.Node
 	ecs.AttachComponent(cameraEntity, &preset.FollowCameraComponent{
 		Target:         targetNode,
-		AnchorPosition: dprec.Vec3Sum(targetNode.Position(), dprec.NewVec3(0.0, 2.0, -cameraDistance)),
+		AnchorPosition: dprec.Vec3Sum(c.airplane.Body.Position(), dprec.NewVec3(0.0, 2.0, -cameraDistance)),
 		AnchorDistance: anchorDistance,
 		CameraDistance: cameraDistance,
 		PitchAngle:     dprec.Degrees(-30),
@@ -252,12 +256,25 @@ func (c *PlayController) OnMouseEvent(element *ui.Element, event ui.MouseEvent) 
 }
 
 func (c *PlayController) OnKeyboardEvent(event ui.KeyboardEvent) bool {
-	return false
+	if c.airplaneKeyboardController == nil {
+		return false
+	}
+	return c.airplaneKeyboardController.OnKeyboardEvent(event)
 }
 
 func (c *PlayController) onPreUpdate(elapsedTime time.Duration) {
+	if c.airplaneGamepadController == nil {
+		gamepad := c.window.Gamepads()[0]
+		if gamepad.Connected() && gamepad.Supported() {
+			c.airplaneGamepadController = NewAirplaneGamepadController(c.airplane, gamepad)
+			c.airplaneKeyboardController = nil
+		}
+	}
 	if c.airplaneGamepadController != nil {
 		c.airplaneGamepadController.Update(elapsedTime.Seconds())
+	}
+	if c.airplaneKeyboardController != nil {
+		c.airplaneKeyboardController.Update(elapsedTime.Seconds())
 	}
 	c.airplane.UpdatePhysics(elapsedTime.Seconds())
 }

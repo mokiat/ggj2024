@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"math"
+
 	"github.com/mokiat/gomath/dprec"
 	"github.com/mokiat/lacking/app"
 	"github.com/mokiat/lacking/game"
@@ -10,6 +12,7 @@ import (
 	"github.com/mokiat/lacking/game/physics/collision"
 	"github.com/mokiat/lacking/game/physics/constraint"
 	"github.com/mokiat/lacking/game/preset"
+	"github.com/mokiat/lacking/ui"
 )
 
 var (
@@ -147,6 +150,7 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 		Position:   dprec.Vec3Sum(position, airplaneNode.AbsoluteMatrix().Translation()),
 		Rotation:   dprec.IdentityQuat(),
 	})
+	airplaneBody.SetVelocity(dprec.NewVec3(0.0, 0.0, maxThrust))
 	airplaneNode.SetSource(game.BodyNodeSource{
 		Body: airplaneBody,
 	})
@@ -354,6 +358,9 @@ func NewAirplane(physicsScene *physics.Scene, ecsScene *ecs.Scene, model *game.M
 		RightAileronRotConstraint: rightAileronRotation,
 		ElevatorRotConstraint:     elevatorRotation,
 		RudderRotConstraint:       rudderRotation,
+
+		TargetThrust: maxThrust / 1.5,
+		Thrust:       maxThrust,
 	}
 }
 
@@ -402,6 +409,13 @@ func (a *Airplane) UpdatePhysics(elapsedSeconds float64) {
 
 	rudderQuat := dprec.RotationQuat(a.RudderAngle, dprec.BasisYVec3())
 	a.RudderRotConstraint.SetPrimaryDirection(dprec.QuatVec3Rotation(rudderQuat, dprec.BasisZVec3()))
+
+	rotationSpeed := 360 * (1.0 + a.Thrust) * elapsedSeconds
+	rotation := dprec.RotationQuat(dprec.Degrees(rotationSpeed), dprec.BasisZVec3())
+	a.PropellerNode.SetRotation(dprec.QuatProd(
+		a.PropellerNode.Rotation(),
+		rotation,
+	))
 }
 
 func NewAirplaneGamepadController(airplane *Airplane, gamepad app.Gamepad) *AirplaneGamepadController {
@@ -436,14 +450,129 @@ func (c *AirplaneGamepadController) Update(elapsedSeconds float64) {
 	c.airplane.RudderAngle = dprec.Angle(0)
 	c.airplane.RudderAngle -= dprec.Angle(c.gamepad.LeftTrigger()) * maxRudderAngle
 	c.airplane.RudderAngle += dprec.Angle(c.gamepad.RightTrigger()) * maxRudderAngle
-
-	// Propeller
-	rotationSpeed := 360 * (1.0 + c.airplane.Thrust) * elapsedSeconds
-	rotation := dprec.RotationQuat(dprec.Degrees(rotationSpeed), dprec.BasisZVec3())
-	c.airplane.PropellerNode.SetRotation(dprec.QuatProd(
-		c.airplane.PropellerNode.Rotation(),
-		rotation,
-	))
 }
 
-type AirplaneMouseController struct{} // TODO
+func NewAirplaneKeyboardController(airplane *Airplane) *AirplaneKeyboardController {
+	return &AirplaneKeyboardController{
+		airplane: airplane,
+	}
+}
+
+type AirplaneKeyboardController struct {
+	airplane *Airplane
+
+	targetRoll  dprec.Angle
+	targetPitch dprec.Angle
+
+	rollLeft     bool
+	rollRight    bool
+	pitchUp      bool
+	pitchDown    bool
+	throttleUp   bool
+	throttleDown bool
+	rudderLeft   bool
+	rudderRight  bool
+}
+
+func (c *AirplaneKeyboardController) OnKeyboardEvent(event ui.KeyboardEvent) bool {
+	switch event.Code {
+	case ui.KeyCodeArrowLeft:
+		c.rollLeft = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeArrowRight:
+		c.rollRight = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeArrowUp:
+		c.pitchUp = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeArrowDown:
+		c.pitchDown = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeW:
+		c.throttleUp = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeS:
+		c.throttleDown = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeA:
+		c.rudderLeft = event.Action != ui.KeyboardActionUp
+		return true
+	case ui.KeyCodeD:
+		c.rudderRight = event.Action != ui.KeyboardActionUp
+		return true
+	}
+	return false
+}
+
+func (c *AirplaneKeyboardController) Update(elapsedSeconds float64) {
+	var (
+		rudderTurnSpeed    = 60.0
+		rudderRestoreSpeed = 45.0
+
+		pitchTurnSpeed = 60.0
+		maxPitch       = dprec.Degrees(45)
+		minPitch       = dprec.Degrees(-45)
+
+		rollTurnSpeed = 90.0
+		maxRoll       = dprec.Degrees(60)
+	)
+
+	if c.throttleUp {
+		c.airplane.TargetThrust += elapsedSeconds * maxThrust
+	}
+	if c.throttleDown {
+		c.airplane.TargetThrust -= elapsedSeconds * maxThrust
+	}
+	c.airplane.TargetThrust = dprec.Clamp(c.airplane.TargetThrust, 0.0, maxThrust)
+
+	if c.rudderLeft {
+		c.airplane.RudderAngle -= dprec.Degrees(rudderTurnSpeed * elapsedSeconds)
+	}
+	if c.rudderRight {
+		c.airplane.RudderAngle += dprec.Degrees(rudderTurnSpeed * elapsedSeconds)
+	}
+	c.airplane.RudderAngle = dprec.Clamp(c.airplane.RudderAngle, -maxRudderAngle, maxRudderAngle)
+	if !c.rudderLeft && !c.rudderRight {
+		if c.airplane.RudderAngle > 0 {
+			c.airplane.RudderAngle -= dprec.Degrees(rudderRestoreSpeed * elapsedSeconds)
+			c.airplane.RudderAngle = max(c.airplane.RudderAngle, 0)
+		}
+		if c.airplane.RudderAngle < 0 {
+			c.airplane.RudderAngle += dprec.Degrees(rudderRestoreSpeed * elapsedSeconds)
+			c.airplane.RudderAngle = min(c.airplane.RudderAngle, 0)
+		}
+	}
+
+	if c.pitchUp {
+		c.targetPitch -= dprec.Degrees(pitchTurnSpeed * elapsedSeconds)
+	}
+	if c.pitchDown {
+		c.targetPitch += dprec.Degrees(pitchTurnSpeed * elapsedSeconds)
+	}
+	c.targetPitch = dprec.Clamp(c.targetPitch, minPitch, maxPitch)
+
+	if c.rollRight {
+		c.targetRoll += dprec.Degrees(rollTurnSpeed * elapsedSeconds)
+	}
+	if c.rollLeft {
+		c.targetRoll -= dprec.Degrees(rollTurnSpeed * elapsedSeconds)
+	}
+	c.targetRoll = dprec.Clamp(c.targetRoll, -maxRoll, maxRoll)
+
+	directionRoll := dprec.Radians(math.Asin(dprec.Vec3Dot(
+		dprec.UnitVec3(c.airplane.Body.Rotation().OrientationX()),
+		dprec.BasisYVec3(),
+	)))
+	c.airplane.AileronAngle = c.targetRoll - directionRoll
+	c.airplane.AileronAngle = dprec.Clamp(c.airplane.AileronAngle, -maxAileronAngle, maxAileronAngle)
+
+	direction := c.airplane.Body.Velocity()
+	if direction.Length() > 0.1 {
+		lateralDirection := dprec.NewVec2(direction.X, direction.Z).Length()
+		directionPitch := dprec.Radians(math.Atan2(direction.Y, lateralDirection))
+
+		c.airplane.ElevatorAngle = c.targetPitch - directionPitch
+		c.airplane.ElevatorAngle = dprec.Clamp(c.airplane.ElevatorAngle, -maxElevatorAngle, maxElevatorAngle)
+	}
+
+}
