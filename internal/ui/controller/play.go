@@ -267,6 +267,14 @@ func (c *PlayController) Stop() {
 	c.scene.Delete()
 }
 
+func (c *PlayController) CowsRemaining() int {
+	return c.remainingCows()
+}
+
+func (c *PlayController) RemainingTime() time.Duration {
+	return max(0, defeatAfter-c.gameTime)
+}
+
 func (c *PlayController) OnMouseEvent(element *ui.Element, event ui.MouseEvent) bool {
 	return false
 }
@@ -340,9 +348,6 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 		c.onDefeat = nil
 		return
 	}
-}
-func (c *PlayController) CowsRemaining() int {
-	return c.remainingCows()
 }
 
 func (c *PlayController) remainingCows() int {

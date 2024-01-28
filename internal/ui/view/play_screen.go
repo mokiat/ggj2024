@@ -129,17 +129,15 @@ func (c *playScreenComponent) Render() co.Instance {
 			})
 		}))
 
-		co.WithChild("lower-right", co.New(std.Picture, func() {
+		co.WithChild("timer", co.New(widget.Timer, func() {
 			co.WithLayoutData(layout.Data{
 				Width:  opt.V(183),
 				Height: opt.V(184),
 				Bottom: opt.V(0),
 				Right:  opt.V(0),
 			})
-			co.WithData(std.PictureData{
-				Image:      co.OpenImage(c.Scope(), "ui/images/lower-right.png"),
-				ImageColor: opt.V(ui.White()),
-				Mode:       std.ImageModeStretch,
+			co.WithData(widget.TimerData{
+				Provider: c.controller,
 			})
 		}))
 
