@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"math/rand"
+	"fmt"
 	"runtime"
 	"time"
 
@@ -20,8 +20,6 @@ import (
 	"github.com/mokiat/lacking/game/timestep"
 	"github.com/mokiat/lacking/ui"
 )
-
-var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 const (
 	anchorDistance = 6.0
@@ -196,12 +194,15 @@ func (c *PlayController) Start(onVictory func(time.Duration), onDefeat func(int)
 
 	c.cowSpawner = NewCowSpawner(c.scene, c.playData.Cow, c.playData.Burst)
 
-	for i := 0; i < 100; i++ {
-		cow := c.cowSpawner.SpawnCow(dprec.NewVec3(
-			(random.Float64()*2.0-1.0)*400.0,
-			random.Float64()*200.0,
-			(random.Float64()*2.0-1.0)*400.0,
-		))
+	index := 0
+	for {
+		index++
+		name := fmt.Sprintf("Cow.%03d", index)
+		node := c.scene.Root().FindNode(name)
+		if node == nil {
+			break
+		}
+		cow := c.cowSpawner.SpawnCow(node.Position())
 		c.cows = append(c.cows, cow)
 	}
 
