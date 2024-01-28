@@ -28,6 +28,8 @@ const (
 
 const (
 	defeatAfter = 120 * time.Second
+
+	victoryAfter = 10
 )
 
 func NewPlayController(window app.Window, audioAPI audio.API, engine *game.Engine, playData *data.PlayData) *PlayController {
@@ -269,7 +271,7 @@ func (c *PlayController) Stop() {
 }
 
 func (c *PlayController) CowsRemaining() int {
-	return c.remainingCows()
+	return max(0, victoryAfter-c.poppedCows())
 }
 
 func (c *PlayController) RemainingTime() time.Duration {
@@ -335,8 +337,7 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 		c.towerAfter = 24 * time.Hour
 	}
 
-	countCows := c.remainingCows()
-
+	countCows := c.CowsRemaining()
 	if countCows == 0 {
 		c.onVictory(c.gameTime)
 		c.onVictory = nil
@@ -351,10 +352,10 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 	}
 }
 
-func (c *PlayController) remainingCows() int {
+func (c *PlayController) poppedCows() int {
 	var count int
 	for _, cow := range c.cows {
-		if cow.Active {
+		if !cow.Active {
 			count++
 		}
 	}
