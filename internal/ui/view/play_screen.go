@@ -101,6 +101,46 @@ func (c *playScreenComponent) Render() co.Instance {
 				})
 			}))
 		}
+
+		co.WithChild("lower-border", co.New(std.Container, func() {
+			co.WithLayoutData(layout.Data{
+				Bottom: opt.V(0),
+				Left:   opt.V(0),
+				Right:  opt.V(0),
+				Height: opt.V(15),
+			})
+			co.WithData(std.ContainerData{
+				BackgroundColor: opt.V(ui.RGB(0xD9, 0xAD, 0x6C)),
+			})
+		}))
+
+		co.WithChild("lower-left", co.New(std.Picture, func() {
+			co.WithLayoutData(layout.Data{
+				Width:  opt.V(304),
+				Height: opt.V(99),
+				Bottom: opt.V(0),
+				Left:   opt.V(0),
+			})
+			co.WithData(std.PictureData{
+				Image:      co.OpenImage(c.Scope(), "ui/images/lower-left.png"),
+				ImageColor: opt.V(ui.White()),
+				Mode:       std.ImageModeStretch,
+			})
+		}))
+
+		co.WithChild("lower-right", co.New(std.Picture, func() {
+			co.WithLayoutData(layout.Data{
+				Width:  opt.V(183),
+				Height: opt.V(184),
+				Bottom: opt.V(0),
+				Right:  opt.V(0),
+			})
+			co.WithData(std.PictureData{
+				Image:      co.OpenImage(c.Scope(), "ui/images/lower-right.png"),
+				ImageColor: opt.V(ui.White()),
+				Mode:       std.ImageModeStretch,
+			})
+		}))
 	})
 }
 
