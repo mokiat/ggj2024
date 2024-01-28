@@ -1,0 +1,45 @@
+name: Go
+
+on:
+  push:
+    tags: [ '*' ]
+
+jobs:
+  compile:
+    name: Compile
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            ext: '.exe'
+          - os: ubuntu-latest
+            ext: ''
+          - os: macos-latest
+            ext: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          lfs: 'true'
+
+      - name: Setup Go
+        uses: actions/setup-go@v4.1.0
+        with:
+          go-version: "1.21"
+
+      - name: Install Linux Packages
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libgl1-mesa-dev xorg-dev
+
+      - name: Compile
+        run: |
+          mkdir -p "./dist/${{ matrix.os }}"
+          go build -o "./dist/${{ matrix.os }}/gamejam${{ matrix.ext }}" ./cmd/gamejam/
+
+      - name: Archive Distribution
+        uses: actions/upload-artifact@v3
+        with:
+          name: Distribution
+          path: ./dist
