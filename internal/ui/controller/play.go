@@ -341,6 +341,9 @@ func (c *PlayController) onPostUpdate(elapsedTime time.Duration) {
 		return
 	}
 }
+func (c *PlayController) CowsRemaining() int {
+	return c.remainingCows()
+}
 
 func (c *PlayController) remainingCows() int {
 	var count int

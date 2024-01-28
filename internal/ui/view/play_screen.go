@@ -7,6 +7,7 @@ import (
 	"github.com/mokiat/ggj2024/internal/ui/controller"
 	"github.com/mokiat/ggj2024/internal/ui/global"
 	"github.com/mokiat/ggj2024/internal/ui/model"
+	"github.com/mokiat/ggj2024/internal/ui/widget"
 	"github.com/mokiat/gog/opt"
 	"github.com/mokiat/lacking/debug/metric/metricui"
 	"github.com/mokiat/lacking/ui"
@@ -139,6 +140,18 @@ func (c *playScreenComponent) Render() co.Instance {
 				Image:      co.OpenImage(c.Scope(), "ui/images/lower-right.png"),
 				ImageColor: opt.V(ui.White()),
 				Mode:       std.ImageModeStretch,
+			})
+		}))
+
+		co.WithChild("counter", co.New(widget.CowsCounter, func() {
+			co.WithLayoutData(layout.Data{
+				Top:    opt.V(10),
+				Left:   opt.V(10),
+				Width:  opt.V(128),
+				Height: opt.V(184),
+			})
+			co.WithData(widget.CowsCounterData{
+				Provider: c.controller,
 			})
 		}))
 	})
